@@ -1,0 +1,77 @@
+import scapy.all as scapy
+from scapy.layers.inet import TCP, UDP, ICMP
+import datetime
+import logging
+
+# Setup Logging
+logging.basicConfig(
+    filename="nids_logs.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s",
+)
+
+# Packet Capture and Inspection
+def capture_packet(packet):
+    """Callback function to process captured packets"""
+    # Parse packet metadata
+    if packet.haslayer(TCP) or packet.haslayer(UDP) or packet.haslayer(ICMP):
+        protocol = "Unknown"
+        if packet.haslayer(TCP):
+            protocol = "TCP"
+        elif packet.haslayer(UDP):
+            protocol = "UDP"
+        elif packet.haslayer(ICMP):
+            protocol = "ICMP"
+
+        src_ip = packet[scapy.IP].src
+        dst_ip = packet[scapy.IP].dst
+        payload = packet[scapy.Raw].load if packet.haslayer(scapy.Raw) else ""
+
+        # Log the packet
+        logging.info(f"Packet Captured: Protocol={protocol}, Src={src_ip}, Dst={dst_ip}")
+
+        # Call threat detection function
+        detect_threat(protocol, src_ip, dst_ip, payload)
+
+# Threat Detection Mechanisms
+def detect_threat(protocol, src_ip, dst_ip, payload):
+    """Detect threats using rules, anomaly detection, and ML models."""
+    # Rule-based Detection
+    
+   
+    #  Command Injection Pattern
+    if "&&" in str(payload) or ";" in str(payload):
+        generate_alert("Command Injection Attempt Detected", src_ip, dst_ip, protocol)
+
+    # Statistical Anomaly Detection Placeholder
+    # Replace with actual statistical methods
+    # Example: if len(payload) > <THRESHOLD>:
+    #     generate_alert("Anomaly Detected", src_ip, dst_ip, protocol)
+
+    # ML-Based Detection Placeholder
+    # Replace with a pre-trained model for packet classification
+    # Example: if ml_model.predict(payload) == "Malicious":
+    #     generate_alert("ML-Based Threat Detected", src_ip, dst_ip, protocol)
+
+# Alerting and Logging System
+def generate_alert(alert_type, src_ip, dst_ip, protocol):
+    """Generate and log alerts."""
+    alert_msg = f"ALERT: {alert_type} | Src={src_ip} | Dst={dst_ip} | Protocol={protocol}"
+    print(alert_msg)
+    logging.warning(alert_msg)
+
+    # Add Email or Syslog notification support if needed
+    # Example:
+    # send_email_notification(alert_msg)
+    # log_to_syslog(alert_msg)
+
+# Main function to start packet capture
+def main():
+    """Main entry point for the NIDS."""
+    print("Starting Packet Capture...")
+
+    # Replace <INTERFACE> with the network interface to monitor (e.g., 'eth0')
+    scapy.sniff(iface="<INTERFACE>", prn=capture_packet, store=False)
+
+if __name__ == "__main__":
+    main()
